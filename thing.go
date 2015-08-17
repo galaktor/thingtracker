@@ -3,25 +3,10 @@ package main
 import "time"
 
 type Thing struct {
-	Name string `json:"name"`
-	Link string `json:"link"`
-}
-
-type Tracker struct {
+	Id string `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"desc"`
 	Due         time.Time `json:"time"`
-	Thing       Thing
+	ThingName string `json:"name"`
+	ThingLink string `json:"link"`
 }
-
-//type Things []Thing
-
-
-
-
-
-
-
-
-
-
