@@ -77,3 +77,4 @@ func getMimetype(r *http.Request) string {
 	default: return "html"
 	}
 }
+
