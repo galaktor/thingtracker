@@ -38,20 +38,26 @@ var routes = Routes{
 	Route{
 		"things",
 		"GET",
-		"/things",
-		Things,
+		"/list",
+		List,
 	},
 	Route{
 		"thing",
 		"GET",
-		"/things/{thingId}",
+		"/show/{thingId}",
 		View,
 	},
 	Route{
 		"edit",
+		"GET",
+		"/edit/{thingId}",
+		EditForm,
+	},
+	Route{
+		"edit",
 		"PUT",
-		"/things/{thingId}",
-		Edit,
+		"/edit/{thingId}",
+		EditStore,
 	},
 	Route{
 		"new",
@@ -63,7 +69,6 @@ var routes = Routes{
 		"new",
 		"POST",
 		"/new",
-		NewAdd,
+		NewStore,
 	},
-	// TODO EDIT via PUT
 }

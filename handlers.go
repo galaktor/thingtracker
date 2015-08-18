@@ -81,7 +81,7 @@ func refreshThings() (err error) {
 	return
 }
 
-func Things(w http.ResponseWriter, r *http.Request) {
+func List(w http.ResponseWriter, r *http.Request) {
 	if err := refreshThings(); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
@@ -130,7 +130,11 @@ func View(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Edit(w http.ResponseWriter, r *http.Request) {
+func EditForm(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "GET not implemented", 404)
+}
+
+func EditStore(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "PUT not implemented", 404)
 }
 
@@ -143,6 +147,6 @@ func NewForm(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(out))
 }
 
-func NewAdd(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "ADD not implemented", 404)
+func NewStore(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "POST not implemented", 404)
 }

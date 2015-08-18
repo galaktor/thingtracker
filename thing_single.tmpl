@@ -1,10 +1,13 @@
 <html>
   <body>
-    {{$t := .}}<p>Id: {{$t.Id}}</p>
+    {{$t := .}}<form action="/things/{{$t.Id}}" method="PUT">
+    <p>Id: {{$t.Id}}</p>
     <p>Title: {{$t.Title}}</p>
     <p>Description: {{$t.Description}}</p>
     <p>Due: {{$t.Due}}</p>
     <p>ThingName: {{$t.ThingName}}</p>
     <p>ThingLink: {{$t.ThingLink}}</p>
+    <input type="submit" value="save">
+    </form>
   </body>
 </html>
