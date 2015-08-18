@@ -1,7 +1,7 @@
 <html>
   <body>
     <ul>
-      {{range $i, $t := .}}<li>Id: {{$t.Id}}, Title: {{$t.Title}}</li>{{end}}
+      {{range $i, $t := .}}<li>Id: {{$t.Id}}, Title: {{$t.Title}}<a href="/show/{{$t.Id}}">View</a></li>{{end}}
     </ul>
   </body>
 </html>

@@ -1,13 +1,14 @@
 <html>
   <body>
     {{$t := .}}<form action="/edit/{{$t.Id}}" method="POST">
-    <fieldset>
-    Title: <input type="text" name="title" value="{{$t.Title}}"><br>
-    Description: <input type="text" name="description" value="{{$t.Description}}"><br>
-    Due: <input type="text" name="due" value="{{$t.Due}}"><br>
-    ThingName: <input type="text" name="thingname" value="{{$t.ThingName}}"><br>
-    ThingLink: <input type="text" name="thinglink" value="{{$t.ThingLink}}"><br>
-    <input type="submit" value="save">
+      <fieldset>
+      Id: {{$t.Id}}<br>
+      Title: <input type="text" name="title" value="{{$t.Title}}"><br>
+      Description: <input type="text" name="description" value="{{$t.Description}}"><br>
+      Due: <input type="text" name="due" value="{{$t.Due}}"><br>
+      ThingName: <input type="text" name="thingname" value="{{$t.ThingName}}"><br>
+      ThingLink: <input type="text" name="thinglink" value="{{$t.ThingLink}}"><br>
+      <input type="submit" value="save">
     </fieldset>
     </form>
   </body>

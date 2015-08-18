@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"io/ioutil"
+	"os"
 	"strconv"
+	"encoding/json"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -66,8 +69,28 @@ func NewForm(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(out))
 }
 
+var timeLayout = "2006-01-02"
 func NewStore(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "POST not implemented", 404)
+	// TODO synchronize, make id fetch and commit atomic
+	// consider channel in store, where store calls get next id
+	due, err := time.Parse(timeLayout, r.FormValue("due"))
+	guard(err)
+	
+	t := &Thing{
+		Id: strconv.Itoa(getNextId()),
+		Title: r.FormValue("title"),
+		Description: r.FormValue("description"),
+		Due: due ,
+		ThingName: r.FormValue("thingname"),
+		ThingLink: r.FormValue("thinglink"),
+	}
+
+	filename := fmt.Sprintf("store/%s.thing", t.Id)
+	serialized, err := json.Marshal(t)
+	guard(err)
+
+	err = ioutil.WriteFile(filename, serialized, os.ModeExclusive)
+	fmt.Fprintf(w, "successfully added: %v", filename)
 }
 
 func getMimetype(r *http.Request) string {
