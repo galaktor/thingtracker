@@ -45,6 +45,25 @@ var routes = Routes{
 		"thing",
 		"GET",
 		"/things/{thingId}",
-		SingleThing,
+		View,
 	},
+	Route{
+		"edit",
+		"PUT",
+		"/things/{thingId}",
+		Edit,
+	},
+	Route{
+		"new",
+		"GET",
+		"/new",
+		NewForm,
+	},
+	Route{
+		"new",
+		"POST",
+		"/new",
+		NewAdd,
+	},
+	// TODO EDIT via PUT
 }

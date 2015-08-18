@@ -114,7 +114,7 @@ func getMimetype(r *http.Request) string {
 	}
 }
 
-func SingleThing(w http.ResponseWriter, r *http.Request) {
+func View(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	thingId,_ := strconv.Atoi(vars["thingId"])
 	thing := things[thingId]
@@ -128,4 +128,21 @@ func SingleThing(w http.ResponseWriter, r *http.Request) {
 	case "html": renderHtml(w, thing_single, thing)
 	case "json": renderJson(w, thing)
 	}
+}
+
+func Edit(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "PUT not implemented", 404)
+}
+
+func NewForm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	out, err := ioutil.ReadFile("thing_new.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	fmt.Fprintf(w, string(out))
+}
+
+func NewAdd(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "ADD not implemented", 404)
 }
