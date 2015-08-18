@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"time"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -15,7 +16,7 @@ import (
 var thing_list *template.Template
 var thing_single *template.Template
 
-var things []Thing
+var things map[int]*Thing
 
 func init() {
 	loadTemplates()
@@ -43,21 +44,27 @@ func guard(err error) {
 	}
 }
 
-func deserThings() ([]Thing, error) {
+func thingFileNameToId(filename string) (int, error) {
+	return strconv.Atoi(strings.TrimSuffix(filename, ".thing"))
+}
+
+func deserThings() (map[int]*Thing, error) {
 	files, err := ioutil.ReadDir("store")
 	guard(err)
 
-	out := []Thing{}
+	out := make(map[int]*Thing)
 	for _, file := range files {
 		if file.Mode().IsRegular() {
 			if filepath.Ext(file.Name()) == ".thing" {
+				id, err := thingFileNameToId(file.Name())
+				guard(err)
 				fullpath := "store/" + file.Name()
 				content, err := ioutil.ReadFile(fullpath)
 				guard(err)
-				t := Thing{}
-				err = json.Unmarshal(content, &t)
+				t := &Thing{}
+				err = json.Unmarshal(content, t)
 				guard(err)
-				out = append(out, t)
+				out[id] = t
 			}
 		}
 	}
@@ -69,15 +76,16 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Welcome!")
 }
 
-func Reload(w http.ResponseWriter, r *http.Request) {
-	var err error
-	if things, err = deserThings(); err != nil {
-		http.Error(w, err.Error(), 500)
-	}
-	fmt.Fprintln(w, "Reload complete.")
+func refreshThings() (err error) {
+	things, err = deserThings()
+	return
 }
 
 func Things(w http.ResponseWriter, r *http.Request) {
+	if err := refreshThings(); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	
 	switch(getMimetype(r)) {
 	case "html": renderHtml(w, thing_list, things)
 	case "json": renderJson(w, things)
@@ -108,15 +116,13 @@ func getMimetype(r *http.Request) string {
 
 func SingleThing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	thingId := vars["thingId"]
-	thing := &Thing{Id: thingId,
-		Title:       "foo",
-		Description: "bar",
-		Due:         time.Now(),
-		ThingName:   "foo name",
-		ThingLink:   "http://foo.bar"}
+	thingId,_ := strconv.Atoi(vars["thingId"])
+	thing := things[thingId]
 
-	// TODO deserialize struct from json file with id in name
+	if thing == nil {
+		http.Error(w, "Thing not found.", 404)
+		return
+	}
 
 	switch(getMimetype(r)) {
 	case "html": renderHtml(w, thing_single, thing)
