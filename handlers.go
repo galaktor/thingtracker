@@ -3,10 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"io/ioutil"
-	"os"
 	"strconv"
-	"encoding/json"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -27,10 +24,10 @@ func List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getThing(r *http.Request) *Thing {
+func getThing(r *http.Request) (*Thing,error) {
 	vars := mux.Vars(r)
 	thingId,_ := strconv.Atoi(vars["thingId"])
-	return things[thingId]
+	return Get(thingId)
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
@@ -40,8 +37,8 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func View(w http.ResponseWriter, r *http.Request) {
-	thing := getThing(r)
-	if thing == nil {
+	thing, err := getThing(r)
+	if err != nil {
 		notFound(w, r)
 		return
 	}
@@ -53,8 +50,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditForm(w http.ResponseWriter, r *http.Request) {
-	thing := getThing(r)
-	if thing == nil {
+	thing, err := getThing(r)
+	if err != nil {
 		notFound(w, r)
 		return
 	}
@@ -64,8 +61,8 @@ func EditForm(w http.ResponseWriter, r *http.Request) {
 
 func EditStore(w http.ResponseWriter, r *http.Request) {
 	// TODO syncrhonize in store
-	t := getThing(r)
-	if t == nil {
+	t, err := getThing(r)
+	if err != nil {
 		notFound(w, r)
 		return
 	}
@@ -81,14 +78,8 @@ func EditStore(w http.ResponseWriter, r *http.Request) {
 	t.ThingName = r.FormValue("thingname")
 	t.ThingLink = r.FormValue("thinglink")
 
-	filename := fmt.Sprintf("store/%s.thing", t.Id)
-	serialized, err := json.Marshal(t)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-	}
-
-	err = ioutil.WriteFile(filename, serialized, os.ModeExclusive)
-	if err != nil {
+	//UPDATE
+	if err = Save(t); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
 	
@@ -119,17 +110,9 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 		ThingLink: r.FormValue("thinglink"),
 	}
 
-	filename := fmt.Sprintf("store/%s.thing", t.Id)
-	serialized, err := json.Marshal(t)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-	}
+	Save(t)
 
-	err = ioutil.WriteFile(filename, serialized, os.ModeExclusive)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-	}
-
+	refreshThings()
 	redirUrl := fmt.Sprintf("/show/%v", t.Id)
 	http.Redirect(w, r, redirUrl, 302)
 }

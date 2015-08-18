@@ -1,8 +1,12 @@
 package main
 
 import(
+	"errors"
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"io"
 	"io/ioutil"
 	"path/filepath"
 	"encoding/json"
@@ -60,3 +64,46 @@ func getNextId() int {
 
 	return out
 }
+
+func Get(id int) (*Thing, error) {
+	t, found := things[id]
+	if (!found) {
+		return nil, errors.New("thing not found")
+	}
+
+	return t, nil
+}
+
+func Save(t *Thing) error {
+	filename := fmt.Sprintf("store/%s.thing", t.Id)
+	serialized, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.WriteString(file, string(serialized))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
