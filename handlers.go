@@ -24,11 +24,14 @@ func List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func View(w http.ResponseWriter, r *http.Request) {
+func getThing(r *http.Request) *Thing {
 	vars := mux.Vars(r)
 	thingId,_ := strconv.Atoi(vars["thingId"])
-	thing := things[thingId]
+	return things[thingId]
+}
 
+func View(w http.ResponseWriter, r *http.Request) {
+	thing := getThing(r)
 	if thing == nil {
 		http.Error(w, "Thing not found.", 404)
 		return
@@ -41,11 +44,17 @@ func View(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditForm(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "GET not implemented", 404)
+	thing := getThing(r)
+	if thing == nil {
+		http.Error(w, "Thing not found.", 404)
+		return
+	}
+
+	renderHtml(w, thing_edit, thing)
 }
 
 func EditStore(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "PUT not implemented", 404)
+	http.Error(w, "POST not implemented", 404)
 }
 
 func NewForm(w http.ResponseWriter, r *http.Request) {

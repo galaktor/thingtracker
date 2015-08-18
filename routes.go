@@ -55,7 +55,7 @@ var routes = Routes{
 	},
 	Route{
 		"edit",
-		"PUT",
+		"POST",
 		"/edit/{thingId}",
 		EditStore,
 	},

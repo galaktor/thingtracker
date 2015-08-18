@@ -9,6 +9,7 @@ import(
 
 var thing_list *template.Template
 var thing_single *template.Template
+var thing_edit *template.Template
 
 func init() {
 	loadTemplates()
@@ -23,6 +24,11 @@ func loadTemplates() {
 	file, err = ioutil.ReadFile("thing_list.tmpl")
 	guard(err)
 	thing_list, err = template.New("thing_list").Parse(string(file))
+	guard(err)
+
+	file, err = ioutil.ReadFile("thing_edit.tmpl")
+	guard(err)
+	thing_edit, err = template.New("thing_edit").Parse(string(file))
 	guard(err)
 }
 
