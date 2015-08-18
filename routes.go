@@ -30,8 +30,6 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-
-
 var routes = Routes{
 	Route{
 		"index",

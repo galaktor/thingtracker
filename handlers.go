@@ -33,10 +33,16 @@ func getThing(r *http.Request) *Thing {
 	return things[thingId]
 }
 
+func notFound(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Status", "404")
+	w.Header().Set("Content-Type", "text/html")
+	http.ServeFile(w, r, "404.html")
+}
+
 func View(w http.ResponseWriter, r *http.Request) {
 	thing := getThing(r)
 	if thing == nil {
-		http.Error(w, "Thing not found.", 404)
+		notFound(w, r)
 		return
 	}
 
@@ -49,7 +55,7 @@ func View(w http.ResponseWriter, r *http.Request) {
 func EditForm(w http.ResponseWriter, r *http.Request) {
 	thing := getThing(r)
 	if thing == nil {
-		http.Error(w, "Thing not found.", 404)
+		notFound(w, r)
 		return
 	}
 
@@ -60,7 +66,7 @@ func EditStore(w http.ResponseWriter, r *http.Request) {
 	// TODO syncrhonize in store
 	t := getThing(r)
 	if t == nil {
-		http.Error(w, "Thing not found.", 404)
+		notFound(w, r)
 		return
 	}
 
