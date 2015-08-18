@@ -25,18 +25,12 @@ func NewRouter() *mux.Router {
 			Handler(route.HandlerFunc)
 	}
 
-	router.NotFoundHandler = FileHandler{Path:"404.html"}
+	router.NotFoundHandler = NotFoundHandler{}
 
 	return router
 }
 
-type NotFoundHandler struct {
-	Path string
-}
 
-func (f NotFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "404.html")
-}
 
 var routes = Routes{
 	Route{
@@ -81,4 +75,12 @@ var routes = Routes{
 		"/new",
 		NewStore,
 	},
+}
+
+type NotFoundHandler struct {
+	Path string
+}
+
+func (f NotFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "404.html")
 }
