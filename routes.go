@@ -25,6 +25,8 @@ func NewRouter() *mux.Router {
 			Handler(route.HandlerFunc)
 	}
 
+	router.NotFoundHandler = FileHandler{Path:"404.html"}
+
 	return router
 }
 

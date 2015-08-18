@@ -86,18 +86,13 @@ func EditStore(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 	}
 	
-	//	fmt.Fprintf(w, "successfully updated: %v", t.Id)
 	redirUrl := fmt.Sprintf("/show/%v", t.Id)
 	http.Redirect(w, r, redirUrl, 302)
 }
 
 func NewForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	out, err := ioutil.ReadFile("thing_new.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-	}
-	fmt.Fprintf(w, string(out))
+	http.ServeFile(w, r, "thing_new.html")
 }
 
 var timeLayout = "2006-01-02"
@@ -129,7 +124,6 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 	}
 
-	//fmt.Fprintf(w, "successfully added: %v", filename)
 	redirUrl := fmt.Sprintf("/show/%v", t.Id)
 	http.Redirect(w, r, redirUrl, 302)
 }
@@ -142,3 +136,11 @@ func getMimetype(r *http.Request) string {
 	}
 }
 
+// implements http.Handler to set handlers in routers
+type FileHandler struct {
+	Path string
+}
+
+func (f FileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, f.Path)
+}
