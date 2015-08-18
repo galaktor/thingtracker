@@ -46,24 +46,16 @@ func deserThings() (map[int]*Thing, error) {
 
 func refreshThings() (err error) {
 	things, err = deserThings()
-	println(getNextId())
 	return
 }
 
 func getNextId() int {
-	println("getnextid")
 	out := len(things)
 	occupied := true
 	for ;occupied; out++ {
-		println(out)
-		println(occupied)
 		if _,occupied = things[out]; !occupied {
-			println("FOUND ONE")
 			break
 		}
-
-		println(out)
-		println(occupied)
 	}
 
 	return out
