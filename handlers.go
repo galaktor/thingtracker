@@ -136,11 +136,4 @@ func getMimetype(r *http.Request) string {
 	}
 }
 
-// implements http.Handler to set handlers in routers
-type FileHandler struct {
-	Path string
-}
 
-func (f FileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, f.Path)
-}
