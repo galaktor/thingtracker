@@ -3,7 +3,7 @@
     {{$t := .}}<p>Id: {{$t.Id}}</p>
     <p>Title: {{$t.Title}}</p>
     <p>Description: {{$t.Description}}</p>
-    <p>Due: {{$t.Due}}</p>
+    <p>Due: {{$t.Due.Format "2006-01-02"}}</p>
     <p>ThingName: {{$t.ThingName}}</p>
     <p>ThingLink: {{$t.ThingLink}}</p>
     <p><a href="/edit/{{$t.Id}}">Edit</a></p>

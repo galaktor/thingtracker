@@ -13,7 +13,7 @@ import (
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome!")
+	http.Redirect(w, r, "/list", 302)
 }
 
 func List(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +57,38 @@ func EditForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditStore(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "POST not implemented", 404)
+	// TODO syncrhonize in store
+	t := getThing(r)
+	if t == nil {
+		http.Error(w, "Thing not found.", 404)
+		return
+	}
+
+	due, err := time.Parse(timeLayout, r.FormValue("due"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	
+	t.Title = r.FormValue("title")
+	t.Description = r.FormValue("description")
+	t.Due = due
+	t.ThingName = r.FormValue("thingname")
+	t.ThingLink = r.FormValue("thinglink")
+
+	filename := fmt.Sprintf("store/%s.thing", t.Id)
+	serialized, err := json.Marshal(t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+
+	err = ioutil.WriteFile(filename, serialized, os.ModeExclusive)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	
+	//	fmt.Fprintf(w, "successfully updated: %v", t.Id)
+	redirUrl := fmt.Sprintf("/show/%v", t.Id)
+	http.Redirect(w, r, redirUrl, 302)
 }
 
 func NewForm(w http.ResponseWriter, r *http.Request) {
@@ -74,23 +105,33 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 	// TODO synchronize, make id fetch and commit atomic
 	// consider channel in store, where store calls get next id
 	due, err := time.Parse(timeLayout, r.FormValue("due"))
-	guard(err)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 	
 	t := &Thing{
 		Id: strconv.Itoa(getNextId()),
 		Title: r.FormValue("title"),
 		Description: r.FormValue("description"),
-		Due: due ,
+		Due: due,
 		ThingName: r.FormValue("thingname"),
 		ThingLink: r.FormValue("thinglink"),
 	}
 
 	filename := fmt.Sprintf("store/%s.thing", t.Id)
 	serialized, err := json.Marshal(t)
-	guard(err)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 
 	err = ioutil.WriteFile(filename, serialized, os.ModeExclusive)
-	fmt.Fprintf(w, "successfully added: %v", filename)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+
+	//fmt.Fprintf(w, "successfully added: %v", filename)
+	redirUrl := fmt.Sprintf("/show/%v", t.Id)
+	http.Redirect(w, r, redirUrl, 302)
 }
 
 func getMimetype(r *http.Request) string {
