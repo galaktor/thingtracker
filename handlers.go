@@ -110,7 +110,9 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 		ThingLink: r.FormValue("thinglink"),
 	}
 
-	Save(t)
+	if err = Save(t); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 
 	refreshThings()
 	redirUrl := fmt.Sprintf("/show/%v", t.Id)
