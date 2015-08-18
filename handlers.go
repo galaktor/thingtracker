@@ -8,7 +8,6 @@ import (
 	"time"
 	"io/ioutil"
 	"path/filepath"
-	"io"
 
 	"github.com/gorilla/mux"
 )
@@ -20,9 +19,10 @@ var things []Thing
 
 func init() {
 	loadTemplates()
-	t, err := getThings()
+	t, err := deserThings()
 	guard(err)
 	things = t
+	fmt.Println(things)
 }
 
 func loadTemplates() {
@@ -43,15 +43,21 @@ func guard(err error) {
 	}
 }
 
-func getThings() ([]Thing, error) {
+func deserThings() ([]Thing, error) {
 	files, err := ioutil.ReadDir("store")
 	guard(err)
 
 	out := []Thing{}
 	for _, file := range files {
 		if file.Mode().IsRegular() {
-			if filepath.Ext(file.Name()) == "*.thing" {
-				out = append(out, Thing{})
+			if filepath.Ext(file.Name()) == ".thing" {
+				fullpath := "store/" + file.Name()
+				content, err := ioutil.ReadFile(fullpath)
+				guard(err)
+				t := Thing{}
+				err = json.Unmarshal(content, &t)
+				guard(err)
+				out = append(out, t)
 			}
 		}
 	}
@@ -63,38 +69,41 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Welcome!")
 }
 
+func Reload(w http.ResponseWriter, r *http.Request) {
+	var err error
+	if things, err = deserThings(); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	fmt.Fprintln(w, "Reload complete.")
+}
+
 func Things(w http.ResponseWriter, r *http.Request) {
-	things := []Thing{
-		Thing{Id: "1", Title: "one", ThingName: "Foo", ThingLink: "http://www.foo.bar"},
-		Thing{Id: "2", Title: "two", ThingName: "Bar", ThingLink: "http://www.bar.foo"},
+	switch(getMimetype(r)) {
+	case "html": renderHtml(w, thing_list, things)
+	case "json": renderJson(w, things)
 	}
-
-	renderJson(w, things)
 }
 
-func renderJson(out io.Writer, i interface{}) error {
+func renderJson(out http.ResponseWriter, i interface{}) {
+	out.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(out).Encode(i); err != nil {
-		return err
+		http.Error(out, err.Error(), 500)
 	}
-
-	return nil
 }
 
-func renderHtml(out io.Writer, t *template.Template, i interface{}) error {
+func renderHtml(out http.ResponseWriter, t *template.Template, i interface{}) {
+	out.Header().Set("Content-Type", "text/html")
 	if err := t.Execute(out, i); err != nil {
-		return err
+		http.Error(out, err.Error(), 500)
 	}
-
-	return nil
 }
 
 func getMimetype(r *http.Request) string {
-	mimetype := mux.Vars(r)["mimetype"]
-	if mimetype == "" {
-		mimetype = "html"
+	switch(r.FormValue("mimetype")) {
+	case "json": return "json"
+	case "html": return "html"
+	default: return "html"
 	}
-
-	return mimetype
 }
 
 func SingleThing(w http.ResponseWriter, r *http.Request) {

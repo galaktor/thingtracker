@@ -47,4 +47,10 @@ var routes = Routes{
 		"/things/{thingId}",
 		SingleThing,
 	},
+	Route{
+		"reload",
+		"GET",
+		"/reload",
+		Reload,
+	},
 }
