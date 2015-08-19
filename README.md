@@ -13,7 +13,7 @@ Initial revision based on tutorial found at [TheNewStack](http://thenewstack.io/
 * Send email via SMTP
 * When timers expire, send emails to all un-done participants
 * Prettify HTML
-* Make ThingLink <a href>
+* ~~Make ThingLink <a href>~~
 
 # License
 Copyright 2015 Raphael Estrada.

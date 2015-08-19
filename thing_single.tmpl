@@ -6,8 +6,7 @@
     <p>Title: {{$t.Title}}</p>
     <p>Description: {{$t.Description}}</p>
     <p>Due: {{$t.Due.Format "2006-01-02"}}</p>
-    <p>ThingName: {{$t.ThingName}}</p>
-    <p>ThingLink: {{$t.ThingLink}}</p>
+    <p>Thing: <a href="{{$t.ThingLink}}" target="_blank">{{$t.ThingName}}</a></p>
     <h2>Participants</h2>
     <ul>
       {{range $i, $p := $t.Participants}}<li>{{if $p.Done}}<strike>{{end}}{{$p.Email}} ({{$p.Role}}){{if $p.Done}}</strike> <strong>done</strong>{{end}}</li>{{end}}
