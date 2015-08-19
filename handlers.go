@@ -16,6 +16,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func List(w http.ResponseWriter, r *http.Request) {
 	if err := refreshThings(); err != nil {
 		http.Error(w, err.Error(), 500)
+		return
 	}
 	
 	switch(getMimetype(r)) {
@@ -70,17 +71,31 @@ func EditStore(w http.ResponseWriter, r *http.Request) {
 	due, err := time.Parse(timeLayout, r.FormValue("due"))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
+		return
 	}
-	
+
+	t.Owner = Participant{Email: r.FormValue("owner-email")}
 	t.Title = r.FormValue("title")
 	t.Description = r.FormValue("description")
 	t.Due = due
 	t.ThingName = r.FormValue("thingname")
 	t.ThingLink = r.FormValue("thinglink")
 
+	parts := []Participant{}
+	// stop looping when empty email found
+	for i:=0; r.FormValue(fmt.Sprintf("p%v-email", i)) != ""; i++ {
+		p := Participant{}
+		p.Email = r.FormValue(fmt.Sprintf("p%v-email", i))
+		p.Role = r.FormValue(fmt.Sprintf("p%v-role", i))
+		p.Done = r.FormValue(fmt.Sprintf("p%v-done", i)) != ""  // no value means unchecked
+		parts = append(parts, p)
+	}
+	t.Participants = parts
+
 	//UPDATE
 	if err = Save(t); err != nil {
 		http.Error(w, err.Error(), 500)
+		return
 	}
 	
 	redirUrl := fmt.Sprintf("/show/%v", t.Id)
@@ -99,19 +114,32 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 	due, err := time.Parse(timeLayout, r.FormValue("due"))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
+		return
 	}
 	
 	t := &Thing{
+		Owner: Participant{Email: r.FormValue("owner-email")},
 		Id: strconv.Itoa(getNextId()),
 		Title: r.FormValue("title"),
 		Description: r.FormValue("description"),
 		Due: due,
 		ThingName: r.FormValue("thingname"),
 		ThingLink: r.FormValue("thinglink"),
+		Participants: []Participant{},
+	}
+
+	p := Participant{}
+	// stop looping when empty email found
+	for i:=0; r.FormValue(fmt.Sprintf("p%v-email", i)) != ""; i++ {
+		p.Email = r.FormValue(fmt.Sprintf("p%v-email", i))
+		p.Role = r.FormValue(fmt.Sprintf("p%v-role", i))
+		p.Done = r.FormValue(fmt.Sprintf("p%v-done", i)) != ""  // no value means unchecked
+		t.Participants = append(t.Participants, p)
 	}
 
 	if err = Save(t); err != nil {
 		http.Error(w, err.Error(), 500)
+		return
 	}
 
 	refreshThings()

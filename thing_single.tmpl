@@ -6,7 +6,10 @@
     <p>Due: {{$t.Due.Format "2006-01-02"}}</p>
     <p>ThingName: {{$t.ThingName}}</p>
     <p>ThingLink: {{$t.ThingLink}}</p>
+    <ul>
+      {{range $i, $p := $t.Participants}}<li>{{if $p.Done}}<strike>{{end}}{{$p.Email}} ({{$p.Role}}){{if $p.Done}}</strike> <strong>done</strong>{{end}}</li>{{end}}
+    </ul>
+    <br>
     <p><a href="/edit/{{$t.Id}}">Edit</a></p>
-    </form>
   </body>
 </html>

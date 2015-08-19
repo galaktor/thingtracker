@@ -2,13 +2,27 @@
   <body>
     <form action="new" method="POST">
       <fieldset>
+	<legend>Owner</legend>
+	Email: <input type="text" name="owner-email"><br>
+      </fieldset>
+      <fieldset>
+	<legend>Details</legend>
 	Title: <input type="text" name="title"><br>
 	Description: <input type="text" name="description"><br>
 	Due: <input type="text" name="due"> (YYYY-MM-DD)<br>
 	ThingName: <input type="text" name="thingname"><br>
 	ThingLink: <input type="text" name="thinglink"><br>
-	<input type="submit" value="submit">
       </fieldset>
+      <fieldset>
+	<legend>Particpiants</legend>
+	Email: <input type="text" name="p0-email"> Role: <input type="text" name="p1-role"><br>
+	Email: <input type="text" name="p1-email"> Role: <input type="text" name="p2-role"><br>
+	Email: <input type="text" name="p2-email"> Role: <input type="text" name="p3-role"><br>
+	Email: <input type="text" name="p3-email"> Role: <input type="text" name="p4-role"><br>
+	Email: <input type="text" name="p4-email"> Role: <input type="text" name="p5-role"><br>
+      </fieldset>
+      <br>
+      <input type="submit" value="submit">
     </form>
   </body>
 </html>
