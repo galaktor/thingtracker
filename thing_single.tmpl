@@ -1,11 +1,14 @@
 <html>
   <body>
-    {{$t := .}}<p>Id: {{$t.Id}}</p>
+    {{$t := .}}<h1>Thing {{$t.Id}}</h1>
+    <p>Owner: {{$t.Owner.Email}}</p>
+    <h2>Details</h2>
     <p>Title: {{$t.Title}}</p>
     <p>Description: {{$t.Description}}</p>
     <p>Due: {{$t.Due.Format "2006-01-02"}}</p>
     <p>ThingName: {{$t.ThingName}}</p>
     <p>ThingLink: {{$t.ThingLink}}</p>
+    <h2>Participants</h2>
     <ul>
       {{range $i, $p := $t.Participants}}<li>{{if $p.Done}}<strike>{{end}}{{$p.Email}} ({{$p.Role}}){{if $p.Done}}</strike> <strong>done</strong>{{end}}</li>{{end}}
     </ul>
