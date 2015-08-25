@@ -5,16 +5,34 @@ import (
 	"fmt"
 )
 
-// thing id -> ticker
-var tickers map[int]*time.Ticker
+type Reminder struct {
+	due time.Time
+	dur time.Duration
+	t *time.Ticker
+	done chan bool
+}
+
+func NewReminder(due time.Time) *Reminder {
+	return &Reminder{due: due, done: make(chan bool)}
+}
+
+func (r *Reminder) Stop() {
+	if r.t != nil {
+		r.done<-true
+	}
+}
+
+// thing id -> reminder
+var reminders map[int]*Reminder
+
 
 func reset() {
-	if tickers != nil {
-		for _,t := range tickers {
-			t.Stop()
+	if reminders != nil {
+		for _,r := range reminders {
+			r.Stop()
 		}
 	}
-	tickers = make(map[int]*time.Ticker)
+	reminders = make(map[int]*Reminder)
 }
 
 func refreshReminders(things map[int]*Thing) error {
@@ -29,45 +47,68 @@ func refreshReminders(things map[int]*Thing) error {
 
 func setOne(t *Thing) error {
 	// cancel existing ticker
-	ticker, ok := tickers[t.Id]
+	reminder, ok := reminders[t.Id]
 	if ok {
-		ticker.Stop()
-		delete(tickers, t.Id)
+		reminder.Stop()
+		delete(reminders, t.Id)
 	}
 
-	// hard-code time of day for now
-	expHour := 17
-	expMin  := 15
-	
-	now := time.Now()
 
-	then := time.Date(now.Year(), now.Month(), now.Day(), expHour, expMin, 0, 0, time.Local)
-	
-	// if past time, move by a day to tomorrow
-	if now.After(then) {
-		then = then.AddDate(0, 0, 1)
-		fmt.Printf("changed then to %v\n", then)
-	}
 
-	fmt.Printf("id %v then at %v\n", t.Id, then)
-	dur := then.Sub(now)
-	fmt.Printf("id %v wait time is %v\n", t.Id, dur)
-	
-	ticker = time.NewTicker(dur)
-	tickers[t.Id] = ticker
+	reminder = NewReminder(t.Due)
+	reminders[t.Id] = reminder
 
-	waitFor(ticker)
+	reminder.Set()
+	reminder.Start()
 	
-	fmt.Printf("set thing id %v to expire at %v\n", t.Id, then)
-
 	return nil
 }
 
-func waitFor(t *time.Ticker) {
-	go func(c <-chan time.Time) {
-		fmt.Printf("expired: %v\n", <-c)
-	}(t.C)
+
+func (r *Reminder) Set() {
+	
+	now := time.Now()
+	// due date at 10:30
+	then := r.due.Add(time.Hour*10).Add(time.Minute*30)
+
+	// TEMP HACK FOR DEV PURPOSES ONLY
+//	then = time.Now().Add(time.Second*10)
+	
+	// if past time, move by a day to tomorrow
+	// INEFFICIENT AS HECK BUT WHATEVS!
+	for now.After(then) {
+		then = then.AddDate(0, 0, 1)
+	}
+
+	fmt.Printf("then: %v\n", then)
+	r.dur = then.Sub(now)
 }
 
+func (r *Reminder) Start() {
+	if r.t == nil {
+		go func() {
+
+		Loop:
+			for {
+				r.t = time.NewTicker(r.dur)
+				fmt.Printf("wait time is %v\n", r.dur)
+				
+				select {
+				case <- r.t.C:  // expired
+					println("expired")
+					r.Set()
+					continue
+				case <- r.done: // closed
+					println("closed")
+					r.t.Stop()
+					break Loop
+				}				
+			}
+			
+			r.t = nil
+			println("gofunc dead")
+		}()
+	}
+}
 
 // todo: on expire, set anew for next day
