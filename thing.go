@@ -10,11 +10,12 @@ type Participant struct {
 
 type Thing struct {
 	Owner Participant `json:"owner"`
-	Id string `json:"id"`
+	Id int `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"desc"`
 	Due         time.Time `json:"time"`
 	ThingName string `json:"name"`
 	ThingLink string `json:"link"`
+	IntervalDays int `json:"interval"`
 	Participants []Participant `json:"participants"`
 }

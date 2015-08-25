@@ -18,6 +18,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	refreshReminders(things)
 	
 	switch(getMimetype(r)) {
 	case "html": renderHtml(w, thing_list, things)
@@ -74,10 +75,17 @@ func EditStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	interval, err := strconv.Atoi(r.FormValue("interval"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
 	t.Owner = Participant{Email: r.FormValue("owner-email")}
 	t.Title = r.FormValue("title")
 	t.Description = r.FormValue("description")
 	t.Due = due
+	t.IntervalDays = interval
 	t.ThingName = r.FormValue("thingname")
 	t.ThingLink = r.FormValue("thinglink")
 
@@ -116,13 +124,20 @@ func NewStore(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	interval, err := strconv.Atoi(r.FormValue("interval"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	
 	t := &Thing{
 		Owner: Participant{Email: r.FormValue("owner-email")},
-		Id: strconv.Itoa(getNextId()),
+		Id: getNextId(),
 		Title: r.FormValue("title"),
 		Description: r.FormValue("description"),
 		Due: due,
+		IntervalDays: interval,
 		ThingName: r.FormValue("thingname"),
 		ThingLink: r.FormValue("thinglink"),
 		Participants: []Participant{},
