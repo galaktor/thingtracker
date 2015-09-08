@@ -19,3 +19,17 @@ type Thing struct {
 	IntervalDays int `json:"interval"`
 	Participants []Participant `json:"participants"`
 }
+
+func (t *Thing) AllDone() bool {
+	if len(t.Participants) == 0 {
+		return true
+	}
+
+	for _,p := range t.Participants {
+		if !p.Done {
+			return false
+		}
+	}
+
+	return true
+}

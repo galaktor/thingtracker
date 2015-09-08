@@ -73,6 +73,12 @@ var routes = Routes{
 		"/new",
 		NewStore,
 	},
+	Route{
+		"remind",
+		"GET",
+		"/remind/{thingId}",
+		Remind,
+	},
 }
 
 type NotFoundHandler struct {

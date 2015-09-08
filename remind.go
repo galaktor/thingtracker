@@ -1,114 +1,66 @@
 package main
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
-type Reminder struct {
-	due time.Time
-	dur time.Duration
-	t *time.Ticker
-	done chan bool
+var dailyTicker *time.Ticker
+var stopTicker chan bool
+
+func startTimer() {
+	dailyTicker := newTicker()
+	go func() {
+	loop:
+		for {
+			select {
+			case t := <-dailyTicker.C:
+				fmt.Printf("ticker expired at %v\n", t)
+				remindAll()
+				dailyTicker = newTicker()
+			case <-stopTicker:
+				dailyTicker.Stop()
+				dailyTicker = nil
+				break loop
+			}
+
+		}
+	}()
 }
 
-func NewReminder(due time.Time) *Reminder {
-	return &Reminder{due: due, done: make(chan bool)}
-}
-
-func (r *Reminder) Stop() {
-	if r.t != nil {
-		r.done<-true
-	}
-}
-
-// thing id -> reminder
-var reminders map[int]*Reminder
-
-
-func reset() {
-	if reminders != nil {
-		for _,r := range reminders {
-			r.Stop()
+func remindAll() {
+	for _,t := range things {
+		fmt.Printf("reminding: %v\n", t.Id)
+		err := remindOne(t)
+		if err != nil {
+			println(err.Error())
+			// TODO HANDLE THIS
 		}
 	}
-	reminders = make(map[int]*Reminder)
 }
 
-func refreshReminders(things map[int]*Thing) error {
-	reset()
-	
-	for _,t := range things {
-		setOne(t)
+func remindOne(t *Thing) error {
+	if(!t.AllDone()) {
+		return t.EmailParticipants()
 	}
 
 	return nil
 }
 
-func setOne(t *Thing) error {
-	// cancel existing ticker
-	reminder, ok := reminders[t.Id]
-	if ok {
-		reminder.Stop()
-		delete(reminders, t.Id)
-	}
-
-
-
-	reminder = NewReminder(t.Due)
-	reminders[t.Id] = reminder
-
-	reminder.Set()
-	reminder.Start()
-	
-	return nil
-}
-
-
-func (r *Reminder) Set() {
-	
+func newTicker() *time.Ticker {
 	now := time.Now()
-	// due date at 10:30
-	then := r.due.Add(time.Hour*10).Add(time.Minute*30)
 
-	// TEMP HACK FOR DEV PURPOSES ONLY
-//	then = time.Now().Add(time.Second*10)
+	hour := 10
+	min  := 30
+
+	next := time.Date(now.Year(), now.Month(), now.Day(), hour, min, 0, 0, time.Local)
+
+	// RAPH HACK, DELETE ME
+	next = now.Add(time.Second*15)
 	
-	// if past time, move by a day to tomorrow
-	// INEFFICIENT AS HECK BUT WHATEVS!
-	for now.After(then) {
-		then = then.AddDate(0, 0, 1)
+	if !next.After(now) {
+		next = next.Add(time.Hour * 24)
 	}
-
-	fmt.Printf("then: %v\n", then)
-	r.dur = then.Sub(now)
+	dur := next.Sub(now)
+	return time.NewTicker(dur)
 }
-
-func (r *Reminder) Start() {
-	if r.t == nil {
-		go func() {
-
-		Loop:
-			for {
-				r.t = time.NewTicker(r.dur)
-				fmt.Printf("wait time is %v\n", r.dur)
-				
-				select {
-				case <- r.t.C:  // expired
-					println("expired")
-					r.Set()
-					continue
-				case <- r.done: // closed
-					println("closed")
-					r.t.Stop()
-					break Loop
-				}				
-			}
-			
-			r.t = nil
-			println("gofunc dead")
-		}()
-	}
-}
-
-// todo: on expire, set anew for next day

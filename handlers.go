@@ -18,8 +18,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	refreshReminders(things)
-	
+
 	switch(getMimetype(r)) {
 	case "html": renderHtml(w, thing_list, things)
 	case "json": renderJson(w, things)
@@ -36,6 +35,22 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Status", "404")
 	w.Header().Set("Content-Type", "text/html")
 	http.ServeFile(w, r, "404.html")
+}
+
+func Remind(w http.ResponseWriter, r *http.Request) {
+	thing, err := getThing(r)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	
+	err = remindOne(thing)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	redir := fmt.Sprintf("/show/%v", thing.Id)
+	http.Redirect(w, r, redir, 302)
 }
 
 func View(w http.ResponseWriter, r *http.Request) {

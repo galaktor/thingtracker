@@ -33,6 +33,7 @@ func deserThings() (map[int]*Thing, error) {
 		if file.Mode().IsRegular() {
 			if filepath.Ext(file.Name()) == ".thing" {
 				id, err := thingFileNameToId(file.Name())
+				println(id)
 				guard(err)
 				fullpath := "store/" + file.Name()
 				content, err := ioutil.ReadFile(fullpath)
@@ -75,7 +76,7 @@ func Get(id int) (*Thing, error) {
 }
 
 func Save(t *Thing) error {
-	filename := fmt.Sprintf("store/%s.thing", t.Id)
+	filename := fmt.Sprintf("store/%v.thing", t.Id)
 	serialized, err := json.Marshal(t)
 	if err != nil {
 		return err
@@ -94,16 +95,3 @@ func Save(t *Thing) error {
 
 	return nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
