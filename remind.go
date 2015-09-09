@@ -56,7 +56,7 @@ func newTicker() *time.Ticker {
 	next := time.Date(now.Year(), now.Month(), now.Day(), hour, min, 0, 0, time.Local)
 
 	// RAPH HACK, DELETE ME
-	next = now.Add(time.Second*15)
+//	next = now.Add(time.Second*15)
 	
 	if !next.After(now) {
 		next = next.Add(time.Hour * 24)
