@@ -31,7 +31,9 @@ func (t *Thing) EmailParticipants() error {
 	e.From = t.Owner.Email
 	e.To = []string{}
 	for _,p := range t.Participants {
-		e.To = append(e.To, p.Email)
+		if !p.Done {
+			e.To = append(e.To, p.Email)
+		}
 	}
 	e.Subject = "A friendly reminder..."
 	e.Text = []byte(fmt.Sprintf(texttempl, t.Owner.Email, showurl, t.ThingName, t.ThingLink, editurl))
